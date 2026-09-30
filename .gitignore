@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+# Never commit real captures or logs -- only the synthetic lab/sample.pcap is allowed.
+*.pcap
+*.pcapng
+!lab/sample.pcap
+*.jsonl

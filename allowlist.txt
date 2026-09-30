@@ -1,0 +1,4 @@
+# Interfaces the sniffer may capture on LIVE. Loopback (lo, lo0) is always allowed.
+# Only add an interface here if your instructor provided it as a lab network.
+# Example (host-only VirtualBox network):
+# vboxnet0
