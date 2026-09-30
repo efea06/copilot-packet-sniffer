@@ -144,24 +144,4 @@ COPILOT_LOG.md        Running log of Copilot suggestions accepted/rejected
 
 ---
 
-## AI Use Policy
 
-This project was built with GitHub Copilot under the following rules.
-
-**Use Copilot for:**
-
-- boilerplate, CLI parsing, JSON formatting, unit test scaffolds
-
-**Do not ask Copilot for:**
-
-- capturing "other people's traffic"
-- bypassing OS permissions
-- stealth features, persistence, or hiding activity
-
-**Always:**
-
-- add interface/pcap allowlist
-- include redaction
-- default to pcap mode if capture privileges are missing
-
-Every Copilot suggestion that was accepted, modified, or rejected is recorded in [`COPILOT_LOG.md`](COPILOT_LOG.md) and summarized in the report.
