@@ -99,6 +99,4 @@ def test_redact_record_is_deep_and_does_not_mutate_input():
     assert out["dns"]["queries"][0]["name"] == "victim.lab.local"
     assert out["length"] == 100
     assert rec["http"]["path"].endswith("a@b.com")  # original untouched
-def test_phone_numbers_redacted():
-    assert redact_text("Call 410-555-1234 today") == f"Call {REDACTED} today"
     

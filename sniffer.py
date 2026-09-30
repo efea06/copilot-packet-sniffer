@@ -22,8 +22,9 @@ from collections import Counter
 from pathlib import Path
 from typing import TextIO
 
-from scapy.all import sniff  # noqa: E402  (Scapy import is slow; keep it here)
-
+from scapy.config import conf
+conf.max_list_count = 100_000  # macOS: big routing tables overflow Scapy's 4096 default
+from scapy.all import sniff  # noqa: E402
 from decoder import decode_packet, format_text
 from redaction import redact_record
 
@@ -89,8 +90,9 @@ def process_packet(pkt) -> dict:
 class RecordWriter:
     """Scapy `prn` callback: decode -> redact -> write."""
 
-    def __init__(self, fmt: str = "json", stream: TextIO = sys.stdout, out: TextIO | None = None):
-        self.fmt, self.stream, self.out = fmt, stream, out
+    def __init__(self, fmt: str = "json", stream: TextIO | None = None, out: TextIO | None = None):
+        self.fmt, self.out = fmt, out
+        self.stream = stream if stream is not None else sys.stdout
         self.stats: Counter[str] = Counter()
 
     def __call__(self, pkt) -> None:
