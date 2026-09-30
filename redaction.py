@@ -42,6 +42,7 @@ _JSON_KV_RE = re.compile(rf'(?i)("(?:{_KEYS_ALT})"\s*:\s*")([^"]*)(")')
 _KV_RE = re.compile(rf"(?i)(?<![A-Za-z0-9_])((?:{_KEYS_ALT})\s*[=:]\s*)([^&\s;,\"'#]+)")
 # Plain and URL-encoded (%40) emails.
 _EMAIL_RE = re.compile(r"(?i)[A-Za-z0-9._+-]+(?:@|%40)[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+_PHONE_RE = re.compile(r"(?<!\d)(?:\+?1[-.\s]?)?(?:\(\d{3}\)|\d{3})[-.\s]?\d{3}[-.\s]?\d{4}(?!\d)")
 _IPV4_IN_TEXT_RE = re.compile(r"\b(\d{1,3}\.\d{1,3}\.\d{1,3})\.\d{1,3}\b")
 
 _IP_FIELDS = {"src_ip", "dst_ip"}
@@ -79,7 +80,7 @@ def mask_mac(mac: str | None) -> str | None:
 
 
 def redact_text(text: str) -> str:
-    """Remove secrets, emails and host parts of IPv4 addresses from free text."""
+    """Remove secrets, emails, phone numbers and IPv4 host parts from free text."""
     if not text:
         return text
     out = _HEADER_RE.sub(lambda m: f"{m.group(1)}: {REDACTED}", text)
@@ -88,6 +89,7 @@ def redact_text(text: str) -> str:
     out = _JSON_KV_RE.sub(lambda m: f"{m.group(1)}{REDACTED}{m.group(3)}", out)
     out = _KV_RE.sub(lambda m: f"{m.group(1)}{REDACTED}", out)
     out = _EMAIL_RE.sub(REDACTED_EMAIL, out)
+    out = _PHONE_RE.sub(REDACTED, out)
     out = _IPV4_IN_TEXT_RE.sub(lambda m: f"{m.group(1)}.xxx", out)
     return out
 

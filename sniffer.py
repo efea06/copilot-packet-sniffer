@@ -108,9 +108,29 @@ class RecordWriter:
             self.out.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
+def sniff_and_print(iface: str, count: int = DEFAULT_COUNT, bpf: str = DEFAULT_FILTER) -> None:
+    """Sniff an allowlisted interface and print redacted packet summaries."""
+    if not 1 <= count <= MAX_COUNT:
+        raise ValueError(f"count must be between 1 and {MAX_COUNT}")
+    check_interface(iface, load_allowlist())
+    if not has_capture_privileges():
+        raise PermissionError("Live capture requires root or CAP_NET_RAW")
+    sniff(iface=iface, filter=bpf, prn=RecordWriter(fmt="text"), count=count, store=False)
+
+
 # ---------------------------------------------------------------------- CLI
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Ethical lab packet sniffer (loopback / lab / pcap only).")
+    p = argparse.ArgumentParser(
+        description="Ethical lab packet sniffer (loopback / lab / pcap only).",
+        epilog=(
+            "Examples:\n"
+            "  python sniffer.py                                      # read the sample pcap\n"
+            '  python sniffer.py --pcap lab/sample.pcap --filter "udp port 53"\n'
+            '  sudo .venv/bin/python sniffer.py --iface lo --filter "tcp port 8080" --count 40\n'
+            "  python sniffer.py --pcap lab/sample.pcap --format json --out run.jsonl"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     src = p.add_mutually_exclusive_group()
     src.add_argument("-i", "--iface", help="Allowlisted interface to sniff live (e.g. lo).")
     src.add_argument("-r", "--pcap", type=Path, help="Read packets from a .pcap file (default mode).")

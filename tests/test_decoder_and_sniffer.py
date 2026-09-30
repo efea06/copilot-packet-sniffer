@@ -78,6 +78,25 @@ def test_malformed_packet_does_not_crash(monkeypatch):
     assert writer.stats["errors"] == 1
 
 
+def test_sniff_and_print_uses_redacted_output(monkeypatch, capsys):
+    calls = {}
+    monkeypatch.setattr(sniffer, "has_capture_privileges", lambda: True)
+
+    def fake_sniff(**kwargs):
+        calls.update(kwargs)
+        kwargs["prn"](http_pkt())
+
+    monkeypatch.setattr(sniffer, "sniff", fake_sniff)
+    sniffer.sniff_and_print("lo", count=1)
+
+    output = capsys.readouterr().out
+    assert "HTTP GET" in output
+    assert "hunter2" not in output
+    assert calls["iface"] == "lo"
+    assert calls["count"] == 1
+    assert calls["store"] is False
+
+
 # ---------------------------------------------------------------- guardrails
 def test_allowlist_blocks_unlisted_interface(tmp_path):
     allow = sniffer.load_allowlist(tmp_path / "missing.txt")
@@ -111,6 +130,16 @@ def test_falls_back_to_pcap_without_privileges(monkeypatch, tmp_path):
 def test_count_is_capped():
     with pytest.raises(SystemExit):
         sniffer.parse_args(["--count", "100000"])
+
+
+def test_help_shows_usage_examples(capsys):
+    with pytest.raises(SystemExit) as exc_info:
+        sniffer.parse_args(["--help"])
+    assert exc_info.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "Examples:" in help_text
+    assert "--iface lo" in help_text
+    assert "--format json --out run.jsonl" in help_text
 
 
 def test_refuses_raw_pcap_output():

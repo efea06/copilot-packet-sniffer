@@ -75,6 +75,15 @@ def test_ipv4_inside_text_masked():
     assert redact_text("Host: 192.168.56.20:80") == "Host: 192.168.56.xxx:80"
 
 
+@pytest.mark.parametrize("phone", [
+    "410-555-1234",
+    "(410) 555-1234",
+    "+1 410.555.1234",
+])
+def test_us_phone_numbers_redacted(phone):
+    assert redact_text(f"Call {phone} today") == f"Call {REDACTED} today"
+
+
 def test_redact_record_is_deep_and_does_not_mutate_input():
     rec = {
         "src_ip": "192.168.56.10", "dst_ip": "192.168.56.20", "src_mac": "08:00:27:aa:bb:01",
@@ -90,3 +99,6 @@ def test_redact_record_is_deep_and_does_not_mutate_input():
     assert out["dns"]["queries"][0]["name"] == "victim.lab.local"
     assert out["length"] == 100
     assert rec["http"]["path"].endswith("a@b.com")  # original untouched
+def test_phone_numbers_redacted():
+    assert redact_text("Call 410-555-1234 today") == f"Call {REDACTED} today"
+    
